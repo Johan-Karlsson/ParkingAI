@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import constants as const
 import numpy as np
 
@@ -11,14 +12,14 @@ class Car(pygame.sprite.Sprite):
     """
     def __init__(self, x_start, y_start):
         pygame.sprite.Sprite.__init__(self)
-        self.image_org = pygame.image.load("car.png")  # add .convert() to speed up
+        self.image_org = pygame.image.load("car.png")  # .convert() to speed up
         # self.image.set_colorkey(const.BLACK)
         self.v = 0
         self.a = 0
         self.theta = 0
         self.theta_change = 0
-        self.L = 212
-        self.Lr = self.L/2
+        self.L = const.L
+        self.Lr = const.Lr
         self.delta = 0
         self.beta = np.arctan(self.Lr*np.tan(self.delta)/self.L)
         self.image = self.image_org
@@ -36,14 +37,18 @@ class Car(pygame.sprite.Sprite):
 
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[pygame.K_LEFT]:
-            self.delta = -np.pi/9
+            self.delta = -np.pi/5
         elif pressed_keys[pygame.K_RIGHT]:
-            self.delta = np.pi/9
+            self.delta = np.pi/5
+        else:
+            self.delta = 0
         if pressed_keys[pygame.K_UP]:
             self.a = 100
         elif pressed_keys[pygame.K_DOWN]:
             self.a = -100
-    
+        else:
+            self.a = 0
+
     def rotate(self):
         theta_deg = - np.rad2deg(self.theta)
         self.image = pygame.transform.rotate(self.image_org, theta_deg)
@@ -51,7 +56,7 @@ class Car(pygame.sprite.Sprite):
 
     def update(self):
         self.beta = np.arctan(self.Lr*np.tan(self.delta)/self.L)
-        self.v += self.a * const.T
+        self.v += (self.a - const.B * self.v) * const.T
         self.theta_change = self.v*np.tan(self.delta)*np.cos(self.beta)/self.L
         self.theta += self.theta_change * const.T
         self.theta = self.theta % (2*np.pi)
@@ -62,12 +67,30 @@ class Car(pygame.sprite.Sprite):
         self.rotate()
         self.rect.center = (self.x, self.y)
 
-        print("Vel: ", self.v)
-        print("Theta: ", self.theta)
-        print("Delta: ", self.delta)
-        
-        self.a = 0
-        self.delta = 0
+
+# %%
+class Parking:
+    def __init__(self, x_center, y_center):
+        x = x_center - const.WIDTH/2
+        y = y_center - const.HEIGHT/2
+        self.rect = pygame.Rect(x, y, const.WIDTH, const.HEIGHT)
+        self.color = const.WHITE
+        self.line_width = const.LINE_WIDTH
+    
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, self.line_width)
+
+
+
+# %%
+def print_states(screen, font, car):
+    v = int(car.v)
+    delta = np.round(car.delta, 2)
+    theta = np.round(car.theta, 2)
+
+    text_surface = font.render("Vel: {}  Delta: {}  Theta: {}"
+                               .format(v, delta, theta), True, const.YELLOW)
+    screen.blit(text_surface, dest=(0, 0))
 
 
 # %%
@@ -77,7 +100,11 @@ pygame.display.set_caption('Parking AI')
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 crashed = False
+# Create car instance and add to list of sprites
 car = Car(600, 360)
+all_sprites.add(car)
+# Create parking instance and add to list of sprites
+parking = Parking(600, 360)
 all_sprites.add(car)
 
 font = pygame.font.Font(pygame.font.get_default_font(), 18)
@@ -87,11 +114,9 @@ while not crashed:
     events = pygame.event.get()
     crashed = car.control(events)
     all_sprites.update()
-    screen.fill(const.WHITE)
-    text_surface = font.render("Vel: {}  Theta: {}  Delta: {} Change: {}".format(
-        car.v, car.theta_change, car.delta, (int(car.x_change), int(car.y_change))),
-         True, pygame.Color('orange'))
-    screen.blit(text_surface, dest=(0, 0))
+    screen.fill(const.GREY)
+    print_states(screen, font, car)
+    parking.draw(screen)
     all_sprites.draw(screen)
     pygame.display.flip()
 
