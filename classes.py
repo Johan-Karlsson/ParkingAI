@@ -3,14 +3,13 @@ from pygame.locals import *
 import constants as const
 import numpy as np
 
-
-# %%
+# %% Car class 
 class Car(pygame.sprite.Sprite):
     """
     Bicycle model from:
     https://dingyan89.medium.com/simple-understanding-of-kinematic-bicycle-model-81cac6420357
     """
-    def __init__(self, x_start, y_start):
+    def __init__(self, start_pos):
         pygame.sprite.Sprite.__init__(self)
         self.image_org = pygame.image.load("car.png")  # .convert() to speed up
         # self.image.set_colorkey(const.BLACK)
@@ -25,8 +24,8 @@ class Car(pygame.sprite.Sprite):
         self.image = self.image_org
         self.rect_org = self.image_org.get_rect()
         self.rect = self.image.get_rect()
-        self.x, self.y = (x_start, y_start)
-        self.rect.center = (x_start, y_start)
+        self.x, self.y = start_pos
+        self.rect.center = start_pos
         self.rotate()
 
     def control(self, events):
@@ -68,57 +67,14 @@ class Car(pygame.sprite.Sprite):
         self.rect.center = (self.x, self.y)
 
 
-# %%
+# %% Parking class
 class Parking:
-    def __init__(self, x_center, y_center):
-        x = x_center - const.WIDTH/2
-        y = y_center - const.HEIGHT/2
+    def __init__(self, pos):
+        x = pos[0] - const.WIDTH/2
+        y = pos[1] - const.HEIGHT/2
         self.rect = pygame.Rect(x, y, const.WIDTH, const.HEIGHT)
         self.color = const.WHITE
         self.line_width = const.LINE_WIDTH
     
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect, self.line_width)
-
-
-
-# %%
-def print_states(screen, font, car):
-    v = int(car.v)
-    delta = np.round(car.delta, 2)
-    theta = np.round(car.theta, 2)
-
-    text_surface = font.render("Vel: {}  Delta: {}  Theta: {}"
-                               .format(v, delta, theta), True, const.YELLOW)
-    screen.blit(text_surface, dest=(0, 0))
-
-
-# %%
-pygame.init()
-screen = pygame.display.set_mode((1200, 720))
-pygame.display.set_caption('Parking AI')
-clock = pygame.time.Clock()
-all_sprites = pygame.sprite.Group()
-crashed = False
-# Create car instance and add to list of sprites
-car = Car(600, 360)
-all_sprites.add(car)
-# Create parking instance and add to list of sprites
-parking = Parking(600, 360)
-all_sprites.add(car)
-
-font = pygame.font.Font(pygame.font.get_default_font(), 18)
-
-while not crashed:
-    clock.tick(const.FPS)
-    events = pygame.event.get()
-    crashed = car.control(events)
-    all_sprites.update()
-    screen.fill(const.GREY)
-    print_states(screen, font, car)
-    parking.draw(screen)
-    all_sprites.draw(screen)
-    pygame.display.flip()
-
-pygame.quit()
-quit()
