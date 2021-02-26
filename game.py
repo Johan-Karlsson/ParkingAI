@@ -48,9 +48,9 @@ def main(car_pos: tuple, parking_pos: tuple):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the parking game environment")
-    parser.add_argument("--car_pos", "-cp", type=int, nargs=2,
+    parser.add_argument("--car_pos", "-cp", type=int, nargs=2, help="Car start position",
                         default=(const.WINDOW_WIDTH/2, const.WINDOW_HEIGHT/2))
-    parser.add_argument("--parking_pos", "-pp", type=int, nargs=2,
+    parser.add_argument("--parking_pos", "-pp", type=int, nargs=2, help="Parking position",
                         default=(const.WINDOW_WIDTH/2, const.WINDOW_HEIGHT/2))
     args = parser.parse_args()
     main(tuple(args.car_pos), tuple(args.parking_pos))
