@@ -20,7 +20,8 @@ L = 212
 Lr = L/2.5
 
 # Physics
-B = 0.5
+B = 0.8     # Velocity proportional resistance
+MIN_VELOCITY = 10
 
 # Parking
 HEIGHT = 120

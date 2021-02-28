@@ -17,7 +17,11 @@ def print_states(screen, font, car):
 
 
 # %%
-def main(car_pos: tuple, parking_pos: tuple):
+def main(car_pos: tuple, parking_pos: tuple) -> float:
+    """
+    Given intitial position and parking position, this function
+    runs the game environment.
+    """
     pygame.init()
     screen = pygame.display.set_mode((const.WINDOW_WIDTH, const.WINDOW_HEIGHT))
     pygame.display.set_caption('Parking AI')
@@ -44,13 +48,14 @@ def main(car_pos: tuple, parking_pos: tuple):
         pygame.display.flip()
 
     pygame.quit()
-    quit()
+    return 0.0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the parking game environment")
     parser.add_argument("--car_pos", "-cp", type=int, nargs=2, help="Car start position",
                         default=(const.WINDOW_WIDTH/2, const.WINDOW_HEIGHT/2))
     parser.add_argument("--parking_pos", "-pp", type=int, nargs=2, help="Parking position",
-                        default=(const.WINDOW_WIDTH/2, const.WINDOW_HEIGHT/2))
+                        default=(const.WINDOW_WIDTH/2*1.5, const.WINDOW_HEIGHT/2))
     args = parser.parse_args()
-    main(tuple(args.car_pos), tuple(args.parking_pos))
+    score = main(tuple(args.car_pos), tuple(args.parking_pos))
+    print("Score:", score)

@@ -54,6 +54,10 @@ class Car(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect_org.center)
 
     def update(self):
+
+        if np.abs(self.v) < const.MIN_VELOCITY and self.a == 0:
+            self.v = 0
+
         self.beta = np.arctan(self.Lr*np.tan(self.delta)/self.L)
         self.v += (self.a - const.B * self.v) * const.T
         self.theta_change = self.v*np.tan(self.delta)*np.cos(self.beta)/self.L
@@ -70,8 +74,9 @@ class Car(pygame.sprite.Sprite):
 # %% Parking class
 class Parking:
     def __init__(self, pos):
-        x = pos[0] - const.WIDTH/2
-        y = pos[1] - const.HEIGHT/2
+        x, y = pos
+        x -= const.WIDTH/2
+        y -= const.HEIGHT/2
         self.rect = pygame.Rect(x, y, const.WIDTH, const.HEIGHT)
         self.color = const.WHITE
         self.line_width = const.LINE_WIDTH
