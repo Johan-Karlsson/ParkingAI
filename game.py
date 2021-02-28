@@ -15,6 +15,17 @@ def print_states(screen, font, car):
                                .format(v, delta, theta), True, const.YELLOW)
     screen.blit(text_surface, dest=(0, 0))
 
+# %%
+def get_reward(car, parking, crashed, parked) -> float:
+    if crashed:
+        print("Crash!")
+        return const.CRASH_REWARD
+    elif parked:
+        print("Parked!")
+        return const.PARKING_REWARD
+    else:
+       dist = np.sqrt((car.x - parking.x_center)**2 + (car.y - parking.y_center)**2)
+       return 1/dist
 
 # %%
 def main(car_pos: tuple, parking_pos: tuple) -> float:
@@ -27,7 +38,7 @@ def main(car_pos: tuple, parking_pos: tuple) -> float:
     pygame.display.set_caption('Parking AI')
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
-    crashed = False
+    crashed, closed, parked = False, False, False
     # Create car instance and add to list of sprites
     car = Car(car_pos)
     all_sprites.add(car)
@@ -36,11 +47,18 @@ def main(car_pos: tuple, parking_pos: tuple) -> float:
 
     font = pygame.font.Font(pygame.font.get_default_font(), 18)
 
-    while not crashed:
+    scores = []
+    while not (crashed or closed or parked):
         clock.tick(const.FPS)
         events = pygame.event.get()
-        crashed = car.control(events)
+        closed = car.control(events)
         all_sprites.update()
+        # Check car status and calculate score
+        crashed = car.check_boundary_crash(screen)
+        parked = parking.car_is_parked(car)
+        score = get_reward(car, parking, crashed, parked)
+        scores.append(score)
+        # Update graphics
         screen.fill(const.GREY)
         print_states(screen, font, car)
         parking.draw(screen)
@@ -48,7 +66,7 @@ def main(car_pos: tuple, parking_pos: tuple) -> float:
         pygame.display.flip()
 
     pygame.quit()
-    return 0.0
+    return sum(scores)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the parking game environment")

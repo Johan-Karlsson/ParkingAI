@@ -55,6 +55,7 @@ class Car(pygame.sprite.Sprite):
 
     def update(self):
 
+        # If the velocity is very low, set it to zero
         if np.abs(self.v) < const.MIN_VELOCITY and self.a == 0:
             self.v = 0
 
@@ -70,11 +71,16 @@ class Car(pygame.sprite.Sprite):
         self.rotate()
         self.rect.center = (self.x, self.y)
 
+    def check_boundary_crash(self, screen) -> bool:
+        screen_rect = screen.get_rect()
+        return not screen_rect.contains(self.rect)
 
 # %% Parking class
 class Parking:
     def __init__(self, pos):
         x, y = pos
+        self.x_center = x
+        self.y_center = y
         x -= const.WIDTH/2
         y -= const.HEIGHT/2
         self.rect = pygame.Rect(x, y, const.WIDTH, const.HEIGHT)
@@ -83,3 +89,6 @@ class Parking:
     
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect, self.line_width)
+    
+    def car_is_parked(self, car) -> bool:
+        return self.rect.contains(car.rect)
