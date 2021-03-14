@@ -1,9 +1,10 @@
 import pygame
-from pygame.locals import *
+from pygame.locals import * # noqa
 import constants as const
 import numpy as np
 
-# %% Car class 
+
+# %% Car class
 class Car(pygame.sprite.Sprite):
     """
     Bicycle model from:
@@ -27,6 +28,7 @@ class Car(pygame.sprite.Sprite):
         self.x, self.y = start_pos
         self.rect.center = start_pos
         self.rotate()
+        self.parking_distance = None
 
     def control(self, events):
         # Check for events
@@ -75,6 +77,13 @@ class Car(pygame.sprite.Sprite):
         screen_rect = screen.get_rect()
         return not screen_rect.contains(self.rect)
 
+    def update_parking_distance(self, parking) -> float:
+        x_dist = self.x - parking.x_center
+        y_dist = self.y - parking.y_center
+        self.parking_distance = np.sqrt(x_dist**2 + y_dist**2)
+        return self.parking_distance
+
+
 # %% Parking class
 class Parking:
     def __init__(self, pos):
@@ -86,9 +95,9 @@ class Parking:
         self.rect = pygame.Rect(x, y, const.WIDTH, const.HEIGHT)
         self.color = const.WHITE
         self.line_width = const.LINE_WIDTH
-    
+
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect, self.line_width)
-    
+
     def car_is_parked(self, car) -> bool:
         return self.rect.contains(car.rect)

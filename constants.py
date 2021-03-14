@@ -7,10 +7,10 @@ dimensions are given in number of pixels.
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (246, 191, 8)
-GREY = (169,169,169)
+GREY = (169, 169, 169)
 
 # Game
-WINDOW_WIDTH = 1200
+WINDOW_WIDTH = 720
 WINDOW_HEIGHT = 720
 FPS = 30
 T = 1/FPS
