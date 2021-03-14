@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import * # noqa
 import constants as const
 import numpy as np
+from tensorflow.keras import layers, models
+import time
 
 
 # %% Car class
@@ -10,7 +12,7 @@ class Car(pygame.sprite.Sprite):
     Bicycle model from:
     https://dingyan89.medium.com/simple-understanding-of-kinematic-bicycle-model-81cac6420357
     """
-    def __init__(self, start_pos):
+    def __init__(self, start_pos, ai_control):
         pygame.sprite.Sprite.__init__(self)
         self.image_org = pygame.image.load("car.png")  # .convert() to speed up
         # self.image.set_colorkey(const.BLACK)
@@ -29,26 +31,22 @@ class Car(pygame.sprite.Sprite):
         self.rect.center = start_pos
         self.rotate()
         self.parking_distance = None
+        self.ai_control = ai_control
+        if ai_control:
+            self.agent = Agent()
+        else:
+            self.agent = None
 
-    def control(self, events):
+    def control(self, events, pixels):
         # Check for events
         for event in events:
             if event.type == pygame.QUIT:
                 return True
 
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[pygame.K_LEFT]:
-            self.delta = -np.pi/5
-        elif pressed_keys[pygame.K_RIGHT]:
-            self.delta = np.pi/5
+        if not self.ai_control:
+            self.manual_control()
         else:
-            self.delta = 0
-        if pressed_keys[pygame.K_UP]:
-            self.a = 100
-        elif pressed_keys[pygame.K_DOWN]:
-            self.a = -100
-        else:
-            self.a = 0
+            self.ai_action(pixels)
 
     def rotate(self):
         theta_deg = - np.rad2deg(self.theta)
@@ -83,6 +81,37 @@ class Car(pygame.sprite.Sprite):
         self.parking_distance = np.sqrt(x_dist**2 + y_dist**2)
         return self.parking_distance
 
+    def manual_control(self):
+        pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[pygame.K_LEFT]:
+            self.delta = -np.pi/5
+        elif pressed_keys[pygame.K_RIGHT]:
+            self.delta = np.pi/5
+        else:
+            self.delta = 0
+        if pressed_keys[pygame.K_UP]:
+            self.a = 100
+        elif pressed_keys[pygame.K_DOWN]:
+            self.a = -100
+        else:
+            self.a = 0
+
+    def ai_action(self, pixels):
+        action = self.agent.control(pixels)
+        if action[0] > 0.5:
+            self.delta = -np.pi/5
+        elif action[1] > 0.5:
+            self.delta = np.pi/5
+        else:
+            self.delta = 0
+        if action[2] > 0.5:
+            self.a = 100
+        elif action[3] > 0.5:
+            self.a = -100
+        else:
+            self.a = 0
+        return action
+
 
 # %% Parking class
 class Parking:
@@ -101,3 +130,27 @@ class Parking:
 
     def car_is_parked(self, car) -> bool:
         return self.rect.contains(car.rect)
+
+
+# %% Agent class
+class Agent:
+    def __init__(self):
+        self.model = self.build()
+
+    def build(self):
+        model = models.Sequential()
+        model.add(layers.Conv2D(16, (8, 8), activation='relu',
+                  input_shape=(const.WINDOW_WIDTH, const.WINDOW_HEIGHT, 1)))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(4, activation='sigmoid'))
+        model.compile(optimizer='adam')
+        return model
+
+    def control(self, pixels) -> int:
+        data = pixels.reshape(1, 480, 480, 1)
+        start = time.time()
+        action = self.model.predict(data)[0]
+        stop = time.time()
+        action_time = stop - start
+        print("Action: {} Time: {}".format(action, action_time))
+        return action
