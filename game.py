@@ -26,14 +26,18 @@ def get_reward(car, parking, crashed, parked):
         print("Parked!")
         return const.PARKING_REWARD
     else:
-        prev_parking_distance = car.parking_distance
+        # prev_parking_distance = car.parking_distance
         new_parking_distance = car.update_parking_distance(parking)
-        if new_parking_distance < prev_parking_distance:
+        if new_parking_distance == car.shortest_parking_distance:
             return 1
-        elif new_parking_distance > prev_parking_distance:
-            return -1
         else:
             return 0
+        # if new_parking_distance < prev_parking_distance:
+        #     return 1
+        # elif new_parking_distance > prev_parking_distance:
+        #     return -1
+        # else:
+        #     return 0
 
 
 # %%

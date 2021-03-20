@@ -31,6 +31,7 @@ class Car(pygame.sprite.Sprite):
         self.rect.center = start_pos
         self.rotate()
         self.parking_distance = None
+        self.shortest_parking_distance = 1e6
         self.ai_control = ai_control
         if ai_control:
             self.agent = Agent()
@@ -79,6 +80,8 @@ class Car(pygame.sprite.Sprite):
         x_dist = self.x - parking.x_center
         y_dist = self.y - parking.y_center
         self.parking_distance = np.sqrt(x_dist**2 + y_dist**2)
+        if self.parking_distance < self.shortest_parking_distance:
+            self.shortest_parking_distance = self.parking_distance
         return self.parking_distance
 
     def manual_control(self):
