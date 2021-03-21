@@ -32,12 +32,6 @@ def get_reward(car, parking, crashed, parked):
             return 1
         else:
             return 0
-        # if new_parking_distance < prev_parking_distance:
-        #     return 1
-        # elif new_parking_distance > prev_parking_distance:
-        #     return -1
-        # else:
-        #     return 0
 
 
 # %%
@@ -47,7 +41,9 @@ def main(ai_control: bool, car_pos: tuple, parking_pos: tuple) -> float:
     runs the game environment.
     """
     pygame.init()
-    screen = pygame.display.set_mode((const.WINDOW_WIDTH, const.WINDOW_HEIGHT))
+    screen = pygame.display.set_mode((const.WINDOW_WIDTH,
+                                     const.WINDOW_HEIGHT),
+                                     pygame.SCALED)
     pygame.display.set_caption('Parking AI')
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
@@ -61,17 +57,22 @@ def main(ai_control: bool, car_pos: tuple, parking_pos: tuple) -> float:
 
     scores = []
     pixels = []
+    initial_loop = True
     while not (crashed or closed or parked):
         clock.tick(const.FPS)
         events = pygame.event.get()
-        pixels.append(pygame.surfarray.array2d(screen))
-        closed = car.control(events, pixels[-1])
+        if not initial_loop:
+            pixels.append(pygame.surfarray.array2d(screen))
+            closed = car.control(events, pixels[-1])
         all_sprites.update()
-        # Check car status and calculate score
-        crashed = car.check_boundary_crash(screen)
-        parked = parking.car_is_parked(car)
-        score = get_reward(car, parking, crashed, parked)
-        scores.append(score)
+        if not initial_loop:
+            # Check car status and calculate score
+            crashed = car.check_boundary_crash(screen)
+            parked = parking.car_is_parked(car)
+            score = get_reward(car, parking, crashed, parked)
+            scores.append(score)
+        else:
+            initial_loop = False
         # Update graphics
         screen.fill(const.GREY)
         # print_states(screen, car)
@@ -89,10 +90,10 @@ if __name__ == "__main__":
                         default=False, help="Give car control to AI")
     parser.add_argument("--car_pos", "-cp", type=int,
                         nargs=2, help="Car start position",
-                        default=(const.WINDOW_WIDTH/2, const.WINDOW_HEIGHT/2))
+                        default=(50, 50))
     parser.add_argument("--parking_pos", "-pp", type=int,
                         nargs=2, help="Parking position",
-                        default=(200, 300))
+                        default=(150, 50))
     args = parser.parse_args()
     car_pos = tuple(args.car_pos)
     parking_pos = tuple(args.parking_pos)

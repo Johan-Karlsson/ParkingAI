@@ -14,8 +14,7 @@ class Car(pygame.sprite.Sprite):
     """
     def __init__(self, start_pos, ai_control):
         pygame.sprite.Sprite.__init__(self)
-        self.image_org = pygame.image.load("car.png")  # .convert() to speed up
-        # self.image.set_colorkey(const.BLACK)
+        self.image_org = const.IMAGE_SCALED
         self.v = 0
         self.a = 0
         self.theta = 0
@@ -150,7 +149,8 @@ class Agent:
         return model
 
     def control(self, pixels) -> int:
-        data = pixels.reshape(1, 480, 480, 1)
+        data = pixels.reshape(1, const.WINDOW_WIDTH,
+                              const.WINDOW_HEIGHT, 1)
         start = time.time()
         action = self.model.predict(data)[0]
         stop = time.time()
