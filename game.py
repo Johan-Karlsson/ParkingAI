@@ -59,7 +59,8 @@ def main(ai_control: bool, car_pos: tuple, parking_pos: tuple) -> float:
     pixels = []
     initial_loop = True
     while not (crashed or closed or parked):
-        clock.tick(const.FPS)
+        if not ai_control:
+            clock.tick(const.FPS)
         events = pygame.event.get()
         if not initial_loop:
             pixels.append(pygame.surfarray.array2d(screen))
