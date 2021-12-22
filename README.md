@@ -1,6 +1,7 @@
 # Introduction
 This is a project under development
 
+Note that the Docker implementation is not yet ready.
 ## Install virtual environment
 I use python version 3.8.7, but any version that supports pygame 2.0 should work. In order to be able to run the code you need a virtual environment with all required dependencies. Here is how to install it, after you have cloned the repository:
 1. Open a terminal in the repo and run the following commands
